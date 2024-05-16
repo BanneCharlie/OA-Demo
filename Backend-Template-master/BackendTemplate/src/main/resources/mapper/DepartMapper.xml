@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.banne.template.mapper.DepartMapper">
+
+    <insert id="departAdd" useGeneratedKeys="true" keyProperty="id">
+        insert into  department (id,department_name,parent_id,manager,description,create_time,update_time)
+        values (#{id},#{departmentName},#{parentId},#{manager},#{description},now(),now())
+    </insert>
+
+    <update id="departRemove">
+         update department set isdelete = 1  where id = #{id}
+    </update>
+
+    <update id="departUpdate">
+        update department
+        <set>
+            <if test="departmentName != null and departmentName != ''">
+                department_name = #{departmentName},
+            </if>
+
+            <if test="manager != null and manager != ''">
+                manager =  #{manager},
+            </if>
+
+            <if test="description != null and description != ''">
+                description =  #{description},
+            </if>
+                update_time = now()
+        </set>
+        where isdelete = 0 and id = #{id}
+    </update>
+
+
+    <select id="departQueryById" resultType="com.banne.template.model.entity.Department">
+        select id,parent_id as parentId,department_name as departmentName,create_time as createTime,update_time as updateTime,
+         manager, description
+        from  department where isdelete = 0  and id = #{id}
+    </select>
+
+    <select id="departQuery" resultType="com.banne.template.model.entity.Department">
+        select id,parent_id as parentId,department_name as departmentName,create_time as createTime,update_time as updateTime,
+        manager, description  from department
+        <where>
+            <if test="departmentName != null and departmentName != ''">
+                and department_name like concat('%',#{departmentName},'%')
+            </if>
+
+            <if test="manager != null and manager != ''">
+                and manager  = #{manager}
+            </if>
+
+            <if test="createTimeBegin != null and createTimeBegin != ''">
+                and create_time >= #{createTimeBegin}
+            </if>
+
+            <if test="createTimeEnd != null and createTimeEnd != ''">
+                and create_time &lt;= #{createTimeEnd}
+            </if>
+            and isdelete = 0
+        </where>
+
+    </select>
+
+    <select id="departQueryAll" resultType="com.banne.template.model.entity.Department">
+        select id,parent_id as parentId,department_name as departmentName,create_time as createTime from department where isdelete = 0 and parent_id != 0
+    </select>
+
+    <select id="departQueryTree" resultType="com.banne.template.model.entity.Depart">
+        select id,parent_id as parentId,department_name as departmentName,
+               create_time as createTime,
+               update_time as updateTime,
+               manager, description from department where isdelete = 0
+    </select>
+
+    <select id="departQueryByParentId" resultType="java.lang.Long">
+        select id from department where parent_id = #{departmentId} and isdelete = 0
+    </select>
+
+</mapper>
